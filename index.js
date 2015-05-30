@@ -1,14 +1,19 @@
-var http = require("http");
-
 //calls back with an array of mount json objects from region/server/character combination
 var getCharacterMounts = function(region, server, character, callback){
+	var http = require("http");
 	http.get("http://"+region+".battle.net/api/wow/character/"+server+"/"+character+"?fields=mounts", function(stream){
 		stream.setEncoding("utf8");
-		stream.on("data", function(data){
+
+		var data = "";
+		stream.on("data", function(d){
+			data += d;
+		});
+
+		stream.on("end", function(){
 			var charObj = JSON.parse(data);
 			var mountArray = charObj.mounts.collected;
 			callback(mountArray);
-		})
+		});
 	});
 };
 
