@@ -28,23 +28,21 @@ var getCharacterPets = function(region, server, character){
 
 	http.get("http://"+region+".battle.net/api/wow/character/"+server+"/"+character+"?fields=pets", function(stream){
 		stream.setEncoding("utf8");
-		console.log("\n\n======0=====\n\n");
 		var data = "";
+
 		stream.on("data", function(d){
-			console.log("\n\n====1===\n\n")
 			data += d;
 		});
 
 		stream.on("end", function(){
 			var charObj = JSON.parse(data);
 			var petArray = charObj.pets.collected;
-			console.log("\n\n====2===\n\n")
 			deferred.resolve(petArray);
-			
 		});
+
 	});
 	return deferred.promise;
-}
+};
 
 //similar to above, but with achievements. Achievements have a much more complicated data structure.
 //gives an achievements object, not an array.
@@ -136,53 +134,55 @@ var main = function(){
 	var character = "rocktarded";
 	var characterAchievements;
 	var achievementData;
-	var steps = 0; //temp variable to make sure both callbacks have been done
+	var characterMounts;
+	var characterPets;
+
 
 	//prints a list of mounts for a given character, etc.
-	getCharacterMounts(rg, srv, character).then(function(data){
-		var i;
-		console.log("You have "+data.length+" mounts:");
-		for(i=0;i<data.length;i++){
-			console.log(data[i].name);
-		}
-		console.log("");
-	});
+	Q.all([
+		getCharacterMounts(rg, srv, character).then(function(data){
+			characterMounts = data;
+			/*var i;
+			console.log("You have "+data.length+" mounts:");
+			for(i=0;i<data.length;i++){
+				console.log(data[i].name);
+			}
+			console.log("");*/
+		}),
 
-	getCharacterPets(rg, srv, character).then(function(data){
-		var i;
-		console.log("You have "+data.length+" pets:");
-		for(i=0;i<data.length;i++){
-			console.log(data[i].name);
-		}
-		console.log("");
-	}); 
+		getCharacterPets(rg, srv, character).then(function(data){
+			characterPets = data;
+			/*var i;
+			console.log("You have "+data.length+" pets:");
+			for(i=0;i<data.length;i++){
+				console.log(data[i].name);
+			}
+			console.log("");*/
+		}),
 
-	
+		getCharacterAchievements(rg, srv, character).then(function(data){
+			characterAchievements = data;
+			/*var list = data.achievementsCompleted;
+			console.log("You have "+list.length+" achievements. They will not be listed right now, but trust me.\n");
+			*/
 
-	getCharacterAchievements(rg, srv, character).then(function(data){
-		var list = data.achievementsCompleted;
-		characterAchievements = data;
-		console.log("You have "+list.length+" achievements. They will not be listed right now, but trust me.\n");
-		steps++;
-		if(steps===2)
-			main2();
-	});
+		}),
 
-	getAchievementData(rg).then(function(data){
-		achievementData = data;
-		console.log("There are " +data.length + " categories of achievments.\n");
-		steps++;
-		if(steps ===2)
-			main2();
-	});
+		getAchievementData(rg).then(function(data){
+			achievementData = data;
+			//console.log("There are " +data.length + " categories of achievments.\n");
 
-	//testing checkAchievement
-	var main2 = function(){
-		console.log("\n\n____________________________________________\n\n");
+		})
+	]).then(function(){
+		console.log("Data gathered.\n");
 		checkAchievement(achievementData[0].achievements[8], characterAchievements).then(console.log);
 		checkAchievement(achievementData[0].achievements[9], characterAchievements).then(console.log);
 		checkAchievement(achievementData[0].achievements[10], characterAchievements).then(console.log);
-	}
+
+	}, function(err){
+		console.error(err);
+	});
+
 }
 
 main();
