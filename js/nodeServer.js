@@ -22,15 +22,19 @@ router.get('/', function(req, res) {
 
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /api
+router.route('/:regionId/:realmName/:characterName').get(function(req, res){
+	getData(req, res);
+});
+
 app.use('/api', router);
 
 // START THE SERVER
-//app.listen(port);
+app.listen(port);
 console.log('Server running on port ' + port);
 
 
 
-//calls back with an array of mount json objects from region/server/character combination
+//calls back with a character object including an array of mount objects from region/server/character combination
 var getCharacterMounts = function(region, server, character){
 	var http = require("http");
 	var deferred = Q.defer();
@@ -45,14 +49,14 @@ var getCharacterMounts = function(region, server, character){
 
 		stream.on("end", function(){
 			var charObj = JSON.parse(data);
-			var mountArray = charObj.mounts.collected;
-			deferred.resolve(mountArray);
+			//var mountArray = charObj.mounts.collected;
+			deferred.resolve(charObj);
 		});
 	});
 	return deferred.promise;
 };
 
-//same as above, but for companions. can include duplicates.
+//same as above, but for companions. can include duplicates. only gives an array
 var getCharacterPets = function(region, server, character){
 	var http = require("http");
 	var deferred = Q.defer();
@@ -99,16 +103,19 @@ var getCharacterAchievements = function(region, server, character){
 };
 
 //gets an array of achievement objects. one for each major category.
-/*
+/* structure:
 {
-	achievements[
+	achievements: [
 		{
-			categories[
-				{
-					achievements[x, y, z]
-				}
-			]
-			achievements[a, b, c]
+			categories:[
+				{achievements: [a,b,c]},
+				{achievements: [d,e,f]}
+			],
+			achievements: [x,y,z]
+		},
+		{
+			categories: [],
+			achievements: []
 		}
 	]
 }
@@ -165,7 +172,6 @@ var checkAchievements = function(achievements, charAchieves){
 		var deferred = Q.defer();
 		var id = achievement.id;
 		if(getIndex(id, charAchieves.achievementsCompleted) >= 0){
-			console.log("checked an achievement");
 			achievement.completed = true;
 			deferred.resolve(true);
 		} else{
@@ -213,62 +219,59 @@ var getIndex = function(num, array){
 }
 
 
-//main method for testing
-var main = function(){
-	var rg = "us";
-	var srv = "shuhalo";	//these will obviously be changable later
-	var character = "rocktarded";
+//gets the data from the API, puts it together correctly, and sends it back via http
+var getData = function(req, res){
+	var rg = req.params.regionId;//region: "us" or "eu"
+	var srv = req.params.realmName;	//these will obviously be changable later
+	var character = req.params.characterName;
 	var characterAchievements;
 	var achievementData;
 	var characterMounts;
 	var characterPets;
+	var charObj;
 
-
-	//gets a list of mounts for a given character, etc.
+	//gets all the data for a given character from battle.net's api, plus general achievement data
 	Q.all([
 		getCharacterMounts(rg, srv, character).then(function(data){
-			characterMounts = data;
-			/*var i;
-			console.log("You have "+data.length+" mounts:");
-			for(i=0;i<data.length;i++){
-				console.log(data[i].name);
-			}
-			console.log("");*/
+			charObj = data;
+			characterMounts = data.mounts;
+
 		}),
 
 		getCharacterPets(rg, srv, character).then(function(data){
 			characterPets = data;
-			/*var i;
-			console.log("You have "+data.length+" pets:");
-			for(i=0;i<data.length;i++){
-				console.log(data[i].name);
-			}
-			console.log("");*/
+
 		}),
 
 		getCharacterAchievements(rg, srv, character).then(function(data){
 			characterAchievements = data;
-			/*var list = data.achievementsCompleted;
-			console.log("You have "+list.length+" achievements. They will not be listed right now, but trust me.\n");
-			*/
 
 		}),
 
 		getAchievementData(rg).then(function(data){
 			achievementData = data;
-			//console.log("There are " +data.length + " categories of achievments.\n");
 
 		})
 	]).then(function(){
-		console.log("Data gathered.\n");
 		/*checkAchievement(achievementData[0].achievements[8], characterAchievements).then(console.log);
 		checkAchievement(achievementData[0].achievements[9], characterAchievements).then(console.log);
 		checkAchievement(achievementData[0].achievements[10], characterAchievements).then(console.log);*/
 
 		checkAchievements(achievementData, characterAchievements).then(function(){
-			console.log(achievementData[0].achievements[8]);
-			console.log(achievementData[0].achievements[9]);
-			console.log(achievementData[0].achievements[23]);
+			try{
+				console.log("Data gathered.\n");
+				charObj.pets = characterPets;
+				charObj.achievements = achievementData;
+
+				console.log(charObj);
+
+				res.send(charObj);
+			} catch(err){
+				console.error(err);
+			}
+			console.log("done");
+			
+
 		}, function(err){
 			console.error(err);
 		});
@@ -277,6 +280,4 @@ var main = function(){
 		console.error(err);
 	});
 
-}
-
-main();
+};
