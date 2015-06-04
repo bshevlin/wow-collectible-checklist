@@ -138,7 +138,7 @@ var main = function(){
 	var characterPets;
 
 
-	//prints a list of mounts for a given character, etc.
+	//gets a list of mounts for a given character, etc.
 	Q.all([
 		getCharacterMounts(rg, srv, character).then(function(data){
 			characterMounts = data;
