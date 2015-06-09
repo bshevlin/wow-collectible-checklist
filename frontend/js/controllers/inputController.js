@@ -4,18 +4,17 @@ myApp.controller('inputController', ["$scope", "$http", function ($scope, $http)
 	}*/	
 
     $scope.selectedRegion = 'us';
-
     $scope.regionList = ['us', 'eu'];
 
-    /*$scope.realmList = {//arrays of server objects for us and eu
-    	"us":updateServers("us"),
-    	"eu":updateServers("eu")
-    };*/
+    $scope.selectedRealm;
+    $scope.realmList = {//arrays of server objects for us and eu
+    };
 
-    //console.log($http.get("http://"+"us"+".battle.net/api/wow/realm/status"));
-    $http.get('api/us').success(function(data) {
+    $http.get('http://localhost:8080/api/us').success(function(data) {
    		$scope.realmList.us = data.realms;
-   		console.log(scope.realmList.us);
+	});
+	$http.get('http://localhost:8080/api/eu').success(function(data) {
+   		$scope.realmList.eu = data.realms;
 	});
 }]);
 

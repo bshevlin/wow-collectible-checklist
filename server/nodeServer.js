@@ -18,10 +18,12 @@ var router = express.Router();
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /api
 router.route('/:regionId/:realmName/:characterName').get(function(req, res){
-	getData(req, res);
+	getData(req, res); 
 });
 
 router.route('/:regionID').get(function(req, res){
+	res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 	var rg = req.params.regionID;
 	getRealmStatus(rg).then(function(data){
 		res.send(data);
@@ -29,6 +31,7 @@ router.route('/:regionID').get(function(req, res){
 });
 
 app.use('/api', router);
+
 
 // START THE SERVER
 app.listen(port);
