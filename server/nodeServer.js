@@ -25,12 +25,12 @@ router.get('/', function(req, res) {
 router.route('/:regionId/:realmName/:characterName').get(function(req, res){
 	getData(req, res);
 });
-router.route('/realmStatus/:regionID').get(function(req, res){
-	var rg = req.params.regionID;
-	var deferred = Q.defer();
-		res.send(getRealmStatus(rg));
 
-	return deferred.promise;
+router.route('/:regionID').get(function(req, res){
+	var rg = req.params.regionID;
+	getRealmStatus(rg).then(function(data){
+		res.send(data);
+	});
 });
 
 app.use('/api', router);
@@ -43,7 +43,7 @@ var getRealmStatus = function(region){//gets object containing an array of realm
 	var http = require("http");
 	var deferred = Q.defer();
 
-	http.get("http://" + region + "/api/wow/realm/status", function(stream){
+	http.get("http://" + region + ".battle.net/api/wow/realm/status", function(stream){
 		stream.setEncoding("utf8");
 
 		var data = "";
@@ -54,13 +54,22 @@ var getRealmStatus = function(region){//gets object containing an array of realm
 		stream.on("end", function(){
 			var realmsObj = JSON.parse(data);
 			
+			var newObj = {
+				realms: []
+			};
+			for(var i = 0; i < realmsObj.realms.length; i++){
+				newObj.realms.push({
+					"name": realmsObj.realms[i].name,
+					"slug": realmsObj.realms[i].slug
+				});
 
-
-			deferred.resolve(realmsObj);
+			}
+			console.log(newObj);
+			deferred.resolve(newObj);
 		});
 	});
 	return deferred.promise;
-}
+};
 
 //calls back with a character object including an array of mount objects from region/server/character combination
 var getCharacterMounts = function(region, server, character){
