@@ -25,6 +25,13 @@ router.get('/', function(req, res) {
 router.route('/:regionId/:realmName/:characterName').get(function(req, res){
 	getData(req, res);
 });
+router.route('/realmStatus/:regionID').get(function(req, res){
+	var rg = req.params.regionID;
+	var deferred = Q.defer();
+		res.send(getRealmStatus(rg));
+
+	return deferred.promise;
+});
 
 app.use('/api', router);
 
@@ -32,7 +39,28 @@ app.use('/api', router);
 app.listen(port);
 console.log('Server running on port ' + port);
 
+var getRealmStatus = function(region){//gets object containing an array of realm objects
+	var http = require("http");
+	var deferred = Q.defer();
 
+	http.get("http://" + region + "/api/wow/realm/status", function(stream){
+		stream.setEncoding("utf8");
+
+		var data = "";
+		stream.on("data", function(d){
+			data += d;
+		});
+
+		stream.on("end", function(){
+			var realmsObj = JSON.parse(data);
+			
+
+
+			deferred.resolve(realmsObj);
+		});
+	});
+	return deferred.promise;
+}
 
 //calls back with a character object including an array of mount objects from region/server/character combination
 var getCharacterMounts = function(region, server, character){
@@ -257,14 +285,18 @@ var getData = function(req, res){
 		checkAchievement(achievementData[0].achievements[9], characterAchievements).then(console.log);
 		checkAchievement(achievementData[0].achievements[10], characterAchievements).then(console.log);*/
 
-		checkAchievements(achievementData, characterAchievements).then(function(){
+		//fills out the achievements with a character's progress
+		checkAchievements(achievementData, characterAchievements)
+		.then(function(){
 			try{
 				console.log("Data gathered.\n");
+				//combines the data into one main object
 				charObj.pets = characterPets;
 				charObj.achievements = achievementData;
 
-				console.log(charObj);
+				//console.log(charObj);
 
+				//send the object away
 				res.send(charObj);
 			} catch(err){
 				console.error(err);
