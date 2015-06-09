@@ -13,7 +13,7 @@ myApp.controller('inputController', ["$scope", "$http", function ($scope, $http)
     };*/
 
     //console.log($http.get("http://"+"us"+".battle.net/api/wow/realm/status"));
-    $http.get('js/realmStatus.json').success(function(data) {
+    $http.get('api/us').success(function(data) {
    		$scope.realmList.us = data.realms;
    		console.log(scope.realmList.us);
 	});

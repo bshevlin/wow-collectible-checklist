@@ -13,12 +13,7 @@ var port = 8080;
 
 var router = express.Router();
 
-// test route to make sure everything is working (accessed at GET http://localhost:8080/api)
-router.get('/', function(req, res) {
-    res.json({ message: 'hooray! welcome to our api!' });   
-});
 
-// more routes for our API will happen here
 
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /api
@@ -64,7 +59,7 @@ var getRealmStatus = function(region){//gets object containing an array of realm
 				});
 
 			}
-			console.log(newObj);
+			//console.log(newObj);
 			deferred.resolve(newObj);
 		});
 	});
