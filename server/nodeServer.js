@@ -267,6 +267,8 @@ var getData = function(req, res){
 	var characterPets;
 	var charObj;
 
+	console.log("Request: " + rg + "/" + srv + "/" + character);
+
 	//gets all the data for a given character from battle.net's api, plus general achievement data
 	Q.all([
 		getCharacterMounts(rg, srv, character).then(function(data){
@@ -298,7 +300,7 @@ var getData = function(req, res){
 		checkAchievements(achievementData, characterAchievements)
 		.then(function(){
 			try{
-				console.log("Data gathered.\n");
+				console.log("Data gathered for " + character);
 				//combines the data into one main object
 				charObj.pets = characterPets;
 				charObj.achievements = achievementData;
@@ -310,7 +312,7 @@ var getData = function(req, res){
 			} catch(err){
 				console.error(err);
 			}
-			console.log("done");
+			console.log("Data sent for " + character);
 			
 
 		}, function(err){
