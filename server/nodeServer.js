@@ -85,9 +85,14 @@ var getCharacterMounts = function(region, server, character){
 		});
 
 		stream.on("end", function(){
-			var charObj = JSON.parse(data);
-			//var mountArray = charObj.mounts.collected;
-			deferred.resolve(charObj);
+			try{
+				var charObj = JSON.parse(data);
+				var mountArray = charObj.mounts; //will throw an error maybe
+				deferred.resolve(charObj);
+			} catch(err){
+				deferred.reject(err);
+			}
+			
 		});
 	});
 	return deferred.promise;
@@ -107,9 +112,15 @@ var getCharacterPets = function(region, server, character){
 		});
 
 		stream.on("end", function(){
-			var charObj = JSON.parse(data);
-			var petArray = charObj.pets.collected;
-			deferred.resolve(petArray);
+			try{
+				var charObj = JSON.parse(data);
+				var petArray = charObj.pets;
+
+				deferred.resolve(petArray);
+			} catch(err){
+				deferred.reject(err);
+			}
+			
 		});
 
 	});
@@ -131,9 +142,13 @@ var getCharacterAchievements = function(region, server, character){
 		});
 
 		stream.on("end", function(){
-			var charObj = JSON.parse(data);
-			var achieve = charObj.achievements;
-			deferred.resolve(achieve);
+			try{			
+				var charObj = JSON.parse(data);
+				var achieve = charObj.achievements;
+				deferred.resolve(achieve);
+			} catch(err){
+				deferred.reject(err);
+			}
 		});
 	});
 	return deferred.promise;

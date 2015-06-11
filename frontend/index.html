@@ -67,7 +67,7 @@
 						<th>Name</th>
 						<th>Info</th>
 					</tr>
-					<tr ng-repeat="pet in character.pets">
+					<tr ng-repeat="pet in character.pets.collected">
 						<td>{{$index + 1}}</td>
 						<td><a href="http://www.wowhead.com/npc={{pet.creatureId}}">{{pet.creatureName}}</a></td>
 						<td>---</td>
