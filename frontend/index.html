@@ -17,6 +17,8 @@
 
 <body ng-controller="inputController">
 	<div class="container" role="main">
+
+		<h1>World of Warcraft Collection Tool</h1>
 		<!-- input section -->
 		<div class="input">
 			<div>Region:
@@ -54,9 +56,9 @@
 					</tr>
 				</table>
 			</div>
-<!-- commented out as it is unfinished
+
 			<div class="col-md-6">
-				<table class="table table-bordered"> <!-- pet table, right side->
+				<table class="table table-bordered"> <!-- pet table, right side-->
 					<tr>
 						<th colspan="3">Pets</th>
 					</tr>
@@ -65,14 +67,14 @@
 						<th>Name</th>
 						<th>Info</th>
 					</tr>
-					<tr ng-repeat="mount in character.mounts.collected">
+					<tr ng-repeat="pet in character.pets">
 						<td>{{$index + 1}}</td>
-						<td><a href="http://www.wowhead.com/item={{mount.itemId}}">{{mount.name}}</a></td>
+						<td><a href="http://www.wowhead.com/npc={{pet.creatureId}}">{{pet.creatureName}}</a></td>
 						<td>---</td>
 					</tr>
 				</table>
 			</div>
--->
+
 		</div>
 	</div>
 	
